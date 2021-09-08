@@ -68,6 +68,20 @@ class SpiceNet(object):
     def __repr__(self):
         return self.__str__()
 
+class SpicePin(object):
+    def __init__(self):
+        self.id = None
+        self.node_id = None
+        self.net_id = None
+        self.attributes = {}
+    
+    def __str__(self):
+        content = "SpicePin( " + str(self.id) + ", node: " + str(self.node_id) + ", net: " + str(self.net_id) + " attributes: " + str(self.attributes) + " )" 
+        return content 
+
+    def __repr__(self):
+        return self.__str__()
+
 class SpiceGraph(object):
     def __init__(self):
         self.nodes = []
