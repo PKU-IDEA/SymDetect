@@ -5,6 +5,8 @@ import torch
 
 from sklearn.metrics import f1_score, recall_score, precision_score
 
+from util.dataloader import *
+
 import graphsage.model as sage
 import s3det.s3det as s3det
 from graphsage.plot_confusion_matrix import plot_confusion_matrix
@@ -21,8 +23,8 @@ def filter_exact_the_same(G, p0, p1):
     return pred
 
 def type_rule2(type1, type2):
-    types1 = ['pfet', 'pfet_lvt', 'pmos']
-    types2 = ['nfet', 'nfet_lvt', 'nmos']
+    types1 = ['pfet', 'pfet_lvt', 'pmos', 'PMOS']
+    types2 = ['nfet', 'nfet_lvt', 'nmos', 'NMOS']
     if type1 in types1:
         return type2 in types1
     if type1 in types2:
@@ -68,12 +70,12 @@ def pair_bipartite_match(G, prob, test_pair1, test_pair2):
                     pred[pair_prob[i][3]] = 1
     return pred
 
-def test_sage(model, testset, test_pair1, test_pair2, test_label):
-    G = nx.read_gpickle('data/graph.pkl')
+def test_sage(G, model, testset, test_pair1, test_pair2, test_label):
+    #G = nx.read_gpickle('data/graph.pkl')
     
     if len(testset) < 100000:
         test_output = torch.sigmoid(model.forward(test_pair1, test_pair2))
-        pred = np.where(test_output.data.numpy() < 0.5, 0, 1)
+        #pred = np.where(test_output.data.numpy() < 0.5, 0, 1)
         filt = filter_size_type_elec_rule(G, test_pair1, test_pair2)
         pred = np.where(pred < filt, pred, filt)
         pred = pair_bipartite_match(G, pred, test_pair1, test_pair2)
@@ -106,11 +108,18 @@ def test_sage(model, testset, test_pair1, test_pair2, test_label):
     plot_confusion_matrix(np.asarray(test_label), pred, np.array([0, 1]), title='Confusion Matrix, without normalization')
 
 if __name__ == '__main__':
+    assert len(sys.argv) >= 2, "expected input data directory" 
+
+    print("read data dir:", sys.argv[1])
+    dataX, dataY = parse_all(sys.argv[1]) 
+    feats, G, all_pairs  = prepare_data(dataX, dataY)
+
     start_time = time.time()
-    graphsage, testset, test_pair1, test_pair2, test_label = sage.train()
+    #graphsage, testset, test_pair1, test_pair2, test_label = sage.train()
+    graphsage, testset, test_pair1, test_pair2, test_label = sage.train(feats, G, all_pairs)
     end_time = time.time()
     print(end_time-start_time)
     start_time1 = time.time()
-    test_sage(graphsage, testset, test_pair1, test_pair2, test_label)
+    test_sage(G, graphsage, testset, test_pair1, test_pair2, test_label)
     end_time1 = time.time()
     print(end_time1-start_time1)

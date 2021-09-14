@@ -46,9 +46,10 @@ class SupervisedGraphSage(nn.Module):
         scores = self.forward(pair1, pair2)
         return self.xent(scores, labels)
 
-def load_cora():
+'''def load_cora(feats, G, all_pairs):
     data_dir = "data"
     feat_data = np.load("{}/feats.npy".format(data_dir))
+    feat_data = feats
     num_nodes = feat_data.shape[0]
     #labels = np.empty((num_nodes,1), dtype=np.int64)
     train = []
@@ -74,6 +75,28 @@ def load_cora():
             paper2 = int(info[1])
             adj_lists[paper1]["out"].add(paper2)
             adj_lists[paper2]["in"].add(paper1)
+    return feat_data, train_label, test_label, adj_lists, train, test'''
+
+def load_cora(feats, G, all_pairs):
+    feat_data = feats
+    num_nodes = feat_data.shape[0]
+    train = []
+    test = []
+    train_label = []
+    test_label = []
+    for pair in all_pairs:
+        if pair[3] == 1:
+            train.append([pair[0], pair[1]])
+            train_label.append(pair[2])
+        else:
+            test.append([pair[0], pair[1]])
+            test_label.append(pair[2])
+
+    adj_lists = defaultdict(lambda: defaultdict(set))
+    for pair in list(G.edges()):
+        adj_lists[pair[0]]["out"].add(pair[1])
+        adj_lists[pair[1]]["in"].add(pair[0])
+
     return feat_data, train_label, test_label, adj_lists, train, test
 
 def shuffle_list(*ls):
@@ -82,10 +105,10 @@ def shuffle_list(*ls):
     random.shuffle(l)
     return zip(*l)
 
-def train():
+def train(feats, G, all_pairs):
     np.random.seed(1)
     random.seed(1)
-    feat_data, train_label, test_label, adj_lists, train, test = load_cora()
+    feat_data, train_label, test_label, adj_lists, train, test = load_cora(feats, G, all_pairs)
     num_nodes = feat_data.shape[0]
     feat_dim = feat_data.shape[1]
     hidden_dim = 15
