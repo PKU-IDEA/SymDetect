@@ -5,6 +5,7 @@ import torch
 
 from sklearn.metrics import f1_score, recall_score, precision_score
 
+from util.parser import *
 from util.dataloader import *
 
 import graphsage.model as sage
@@ -76,6 +77,7 @@ def test_sage(G, model, testset, test_pair1, test_pair2, test_label):
     if len(testset) < 100000:
         test_output = torch.sigmoid(model.forward(test_pair1, test_pair2))
         #pred = np.where(test_output.data.numpy() < 0.5, 0, 1)
+        pred = test_output.data.numpy()
         filt = filter_size_type_elec_rule(G, test_pair1, test_pair2)
         pred = np.where(pred < filt, pred, filt)
         pred = pair_bipartite_match(G, pred, test_pair1, test_pair2)
@@ -118,8 +120,8 @@ if __name__ == '__main__':
     #graphsage, testset, test_pair1, test_pair2, test_label = sage.train()
     graphsage, testset, test_pair1, test_pair2, test_label = sage.train(feats, G, all_pairs)
     end_time = time.time()
-    print(end_time-start_time)
+    print("training time:", end_time-start_time, "s")
     start_time1 = time.time()
     test_sage(G, graphsage, testset, test_pair1, test_pair2, test_label)
     end_time1 = time.time()
-    print(end_time1-start_time1)
+    print("inference time:", end_time1-start_time1, "s")
