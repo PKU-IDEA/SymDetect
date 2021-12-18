@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os 
@@ -38,7 +37,8 @@ def draw_graph(graph, labels, colours):
     plt.savefig("graph.pdf", dpi=120)
     return
 
-def prepare_data(dataX, dataY):
+def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist, 
+        nflist, llist, caplist, reslist, bjtlist, xilist, trainset=[]):
     G = nx.Graph() # the graph of all circuits
     num_nodes = 0 # used to merge subgraphs by changing node indices
     all_pairs = [] # store all pos and neg node pairs
@@ -48,7 +48,7 @@ def prepare_data(dataX, dataY):
     node_is_pin = [] # ? judge pin
     node_potential = [] # store symbolic electricity potential of all pins
     ratio_sample = 0.7 # #training_samples/#total_samples
-    trainset = [0, 7, 3, 1, 2]
+    #trainset = [0, 7, 3, 1, 2]
     print("trainset", trainset)
 
     valid_pair_num = 0
@@ -65,8 +65,8 @@ def prepare_data(dataX, dataY):
         # graph -> G
         for g in graph.nodes:
             # node type
-            node_attr[g.id+num_nodes] = type_filter_mos(g.attributes["cell"])
-            node_types.append(type_filter_mos(g.attributes["cell"]))
+            node_attr[g.id+num_nodes] = type_filter_mos(g.attributes["cell"], pmoslist, nmoslist, caplist, reslist, bjtlist, xilist)
+            node_types.append(type_filter_mos(g.attributes["cell"], pmoslist, nmoslist, caplist, reslist, bjtlist, xilist))
             node_is_pin.append(np.array([1, 0]))
             
             # add node
@@ -81,18 +81,34 @@ def prepare_data(dataX, dataY):
             else:
                 G.nodes[g.id+num_nodes]["type"] = "device"
                 sub_G.nodes[g.id+num_nodes]["type"] = "device"
-            if g.attributes["cell"] in ["pmos", "pfet", "pfet_lvt", "PMOS", "nmos", "nfet", "nfet_lvt", "NMOS"]:
+            #if g.attributes["cell"] in ["pmos", "pfet", "pfet_lvt", "PMOS", "nmos", "nfet", "nfet_lvt", "NMOS"] or "xm" in g.attributes["cell"]:
+            if g.attributes["cell"] in moslist:
                 w, nf = -1, 1
-                if 'w' in g.attributes:
-                    w = convert_length(g.attributes['w'])
-                elif 'fw' in g.attributes:
-                    w = convert_length(g.attributes['fw'])
-                if 'nf' in g.attributes:
-                    nf = int(g.attributes['nf'])
-                elif 'fn' in g.attributes:
-                    nf = int(g.attributes['fn'])
-                G.nodes[g.id+num_nodes]['w'] = w / nf 
-                G.nodes[g.id+num_nodes]['l'] = convert_length(g.attributes['l'])
+                #if 'w' in g.attributes:
+                #    w = convert_length(g.attributes['w'])
+                #elif 'fw' in g.attributes:
+                #    w = convert_length(g.attributes['fw'])
+                for wname in wlist:
+                    if wname in g.attributes:
+                        w = convert_length(g.attributes[wname])
+                        break
+                #if 'nf' in g.attributes:
+                #    nf = int(g.attributes['nf'])
+                #elif 'fn' in g.attributes:
+                #    nf = int(g.attributes['fn'])
+                for nfname in nflist:
+                    if nfname in g.attributes:
+                        nf = int(g.attributes[nfname])
+                        break
+                #G.nodes[g.id+num_nodes]['w'] = w / nf 
+                G.nodes[g.id+num_nodes]['w'] = w * nf
+                #G.nodes[g.id+num_nodes]['l'] = convert_length(g.attributes['l'])
+                l = -1
+                for lname in llist:
+                    if lname in g.attributes:
+                        l = convert_length(g.attributes[lname])
+                        break
+                G.nodes[g.id+num_nodes]['l'] = l
                 G.nodes[g.id+num_nodes]["device"] = g.attributes["cell"]
             else:
                 G.nodes[g.id+num_nodes]['w'] = -1

@@ -105,7 +105,7 @@ def shuffle_list(*ls):
     random.shuffle(l)
     return zip(*l)
 
-def train(feats, G, all_pairs):
+def train(feats, G, all_pairs, tflag):
     np.random.seed(1)
     random.seed(1)
     feat_data, train_label, test_label, adj_lists, train, test = load_cora(feats, G, all_pairs)
@@ -138,6 +138,8 @@ def train(feats, G, all_pairs):
     optimizer = torch.optim.Adam(filter(lambda p : p.requires_grad, graphsage.parameters()), lr=0.001, weight_decay=1e-5)
     times = []
     epoch = 500
+    if tflag:
+        epoch = 0
     batch_size = 256
     num_batch = math.ceil(len(train)/batch_size)
     best = 1e9

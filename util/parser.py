@@ -108,7 +108,7 @@ def print_graph_subckt(subckt, graph):
     content += ".ends " + subckt.name
     print(content)
 
-def subckts2graph(subckts, root_hint):
+def subckts2graph(subckts, root_hint, moslist, caplist, reslist, bjtlist, xilist):
     hierarchy_graph = nx.DiGraph()
     subckts_map = {}
     subckts2nodes_map = {}
@@ -146,7 +146,8 @@ def subckts2graph(subckts, root_hint):
         print("local nets", local_nets.keys())
 
         def entry_pins(entry, pin):
-            if len(entry.pins) == 4 and ("fet" in entry.cell or "mos" in entry.cell):
+            #if len(entry.pins) == 4 and ("fet" in entry.cell or "mos" in entry.cell or "xm" in entry.cell):
+            if len(entry.pins) == 4 and entry.cell in moslist:
                 if i == 0:
                     pin.attributes["type"] = "gate"
                 elif i == 1 or i == 2:
@@ -154,8 +155,9 @@ def subckts2graph(subckts, root_hint):
                 elif i == 3:
                     pin.attributes["type"] = "substrate"
                 else:
-                    assert 0, "unknown %d" % i
-            elif "res" in entry.cell or "cap" in entry.cell:
+                    assert 0, "Unknown %d" % i
+            #elif "res" in entry.cell or "cap" in entry.cell or "xr" in entry.cell or "xc" in entry.cell:
+            elif entry.cell in reslist or entry.cell in caplist:
                 pin.attributes["type"] = "passive"
             elif "diode" in entry.cell:
                 if i == 0:
@@ -163,9 +165,10 @@ def subckts2graph(subckts, root_hint):
                 elif i == 1:
                     pin.attributes["type"] = "N-"
                 else:
-                    assert 0, "unknown %d" % i
+                    assert 0, "Unknown %d" %i
             # bipolar junction transistor
-            elif "pnp" in entry.cell or "npn" in entry.cell:
+            #elif "pnp" in entry.cell or "npn" in entry.cell:
+            elif entry.cell in bjtlist:
                 if i == 0:
                     pin.attributes["type"] = "c"
                 elif i == 1:
@@ -173,10 +176,13 @@ def subckts2graph(subckts, root_hint):
                 elif i == 2:
                     pin.attributes["type"] = "e"
                 else:
-                    assert 0, "unknown %d" % i
+                    assert 0, "Unknown %d" % i
+            # customized instance
+            #elif "xi" in entry.cell:
+            elif entry.cell in xilist:
+                pin.attributes["type"] = "customized"
             else:
-                #pdb.set_trace()
-                assert 0, "unknown device: %s" % entry.cell
+                assert 0, "Unknown device: %s" % entry.cell
         
         for entry in subckt.entries:
             # leaf device, mosfet, cap, res, bjt, etc
@@ -261,7 +267,7 @@ def subckts2graph(subckts, root_hint):
 
     return graph, roots
 
-def parse_all(filedir):
+def parse_all(filedir, moslist, caplist, reslist, bjtlist, xilist):
     dataX = []
     dataY = []
 
@@ -286,7 +292,7 @@ def parse_all(filedir):
             pass
 
         # spice graph
-        graph, roots = subckts2graph(subckts, root_hint)
+        graph, roots = subckts2graph(subckts, root_hint, moslist, caplist, reslist, bjtlist, xilist)
 
         symmetry_id_array = []
 
@@ -349,4 +355,4 @@ def parse_all(filedir):
         dataX.append({"subckts" : subckts, "graph" : graph})
         dataY.append(symmetry_id_array)
 
-    return dataX, dataY
+    return dataX, dataY, netlists
