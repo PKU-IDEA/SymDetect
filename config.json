@@ -1,21 +1,21 @@
 {
     "dataset" : "data/huawei",
     "verbose" : true,
-    "mode" : "test+nolabel",
+    "mode" : "train+test+nolabel",
     "result" : "result.txt",
     "trainset" : ["Bandgap_1", "Bandgap_2", "Comparator_1", "Comparator_2", "Dco_1"],
-    "testset" : ["Bandgap_3", "Bandgap_4", "Comparator_3", "Dco_2"],
+    "testset" : ["Bandgap_3", "Bandgap_4", "Comparator_3", "Dco_2", "fake"],
     "savemodel" : "best_model.pkl",
     "ckthead" : [".subckt", ".SUBCKT", "subckt", "SUBCKT"],
     "ckttail" : [".ends", ".ENDS", "ends", "ENDS"],
     "comment" : ["*"],
-    "nmos" : ["nmos"],
-    "pmos" : ["pmos"],
+    "nmos" : ["nmos", "xm_n"],
+    "pmos" : ["pmos", "xm_p"],
     "nf" : ["nf", "fn"],
     "w" : ["w", "fw", "wf"],
     "l" : ["l"],
-    "cap" : ["capacitor"],
-    "res" : ["resistor"],
+    "cap" : ["capacitor", "xc"],
+    "res" : ["resistor", "xr"],
     "bjt" : ["pnp", "npn"],
-    "xi" : ["xi"]
+    "xi" : ["xi", "xi0"]
 }
