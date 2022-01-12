@@ -38,27 +38,35 @@ def type_rule2(type1, type2):
         return type2 in types2
     return 0
 
-def filter_size_type_elec_rule(G, p0, p1):
+def type_rule_config(type1, type2, pmos_types, nmos_types):
+    if type1 in pmos_types:
+        return type2 in pmos_types
+    if type1 in nmos_types:
+        return type2 in nmos_types
+    return 0
+
+def filter_size_type_elec_rule(G, p0, p1, pmos_types, nmos_types):
     pred = np.zeros(len(p0))
     for i in range(len(p0)):
         type1, type2 = G.nodes[p0[i]]['device'], G.nodes[p1[i]]['device']
         w1, l1 = G.nodes[p0[i]]['w'], G.nodes[p0[i]]['l']
         w2, l2 = G.nodes[p1[i]]['w'], G.nodes[p1[i]]['l']
         elec1, elec2 = G.nodes[p0[i]]['elec'], G.nodes[p1[i]]['elec']
-        if type_rule2(type1, type2) and float(w1) == float(w2) and float(l1) == float(l2) and elec1 == elec2:
+        #if type_rule2(type1, type2) and float(w1) == float(w2) and float(l1) == float(l2) and elec1 == elec2:
+        if type_rule_config(type1, type2, pmos_types, nmos_types) and float(w1) == float(w2) and float(l1) == float(l2) and elec1 == elec2: 
             pred[i] = 1
         else:
             pred[i] = 0
     return pred
 
-def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile, lflag):
+def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile, lflag, pmos_types, nmos_types):
     #G = nx.read_gpickle('data/graph.pkl')
     
     if len(testset) < 100000:
         test_output = torch.sigmoid(model.forward(test_pair1, test_pair2))
         #pred = np.where(test_output.data.numpy() < 0.5, 0, 1)
         pred = test_output.data.numpy()
-        filt = filter_size_type_elec_rule(G, test_pair1, test_pair2)
+        filt = filter_size_type_elec_rule(G, test_pair1, test_pair2, pmos_types, nmos_types)
         pred = np.where(pred < filt, pred, filt)
         pred = pair_bipartite_match(G, pred, test_pair1, test_pair2)
         '''for j in range(pred.size):
@@ -84,7 +92,7 @@ def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile,
                 pair2 = test_pair2[j*chunk_size:len(test_pair2)]
             test_output = torch.sigmoid(model.forward(pair1, pair2))
             pred_chunk = np.where(test_output.data.numpy() < 0.5, 0, 1)
-            filt_chunk = filter_size_type_elec_rule(G, pair1, pair2)
+            filt_chunk = filter_size_type_elec_rule(G, pair1, pair2, pmos_types, nmos_types)
             pred_chunk = np.where(pred_chunk < filt_chunk, pred_chunk, filt_chunk)
             pred = np.concatenate((pred, pred_chunk), axis=None)
             print("Inference on the {}-th chunk".format(j))
@@ -135,6 +143,10 @@ class Model():
         self.istest = "test" in config["mode"]
         self.labelflag = "nolabel" in config["mode"]
         self.savemodel = config["savemodel"]
+        
+        self.ckthead = config["ckthead"]
+        self.ckttail = config["ckttail"]
+        self.cktcomment = config["comment"]
 
         self.nmoslist = config["nmos"]
         self.pmoslist = config["pmos"]
@@ -153,7 +165,8 @@ class Model():
         info('i', "Start Parsing Dataset...")
 
         dataX, dataY, netlists = parse_all(self.datadir, self.moslist, 
-                self.caplist, self.reslist, self.bjtlist, self.xilist) 
+                self.caplist, self.reslist, self.bjtlist, self.xilist, 
+                self.ckthead, self.ckttail, self.cktcomment) 
         
         netlists = [os.path.basename(netlist) for netlist in netlists]
         self.trainset = []
@@ -206,7 +219,8 @@ class Model():
 
     def test(self):
         start_time = time.time()
-        test_sage(self.G, self.graphsage, self.testset, self.test_pair1, self.test_pair2, self.test_label, self.resultfile, self.labelflag)
+        test_sage(self.G, self.graphsage, self.testset, self.test_pair1, self.test_pair2, 
+                self.test_label, self.resultfile, self.labelflag, self.pmoslist, self.nmoslist)
         end_time = time.time()
         info('i', "Inference time %f s" % (end_time - start_time))
         pass

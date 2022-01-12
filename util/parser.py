@@ -7,47 +7,77 @@ import glob
 import pdb
 
 import numpy as np
-import networkx as nx
+#import networkx as nx
 
 from util.netlist import *
 
-def read_netlist(filename):
-    subckts = []
-    subckt_flag = False
+def startwithlist(line, cktlist):
+    flag = False
+    for symbol in cktlist:
+        if line.startswith(symbol):
+            flag = True
+            break
+    return flag
 
+def remove_linewrap_symbols(filename):
+    """ remove line wrapping symbol \ 
+
+    """
+    contents = ""
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
-            if not line:
-                continue
-            tokens = line.split()
-            if line.startswith("*"):
-                continue
-            elif line.startswith(".subckt") or line.startswith(".SUBCKT"):
-                tmpckt = SpiceSubckt()
-                tmpckt.name = tokens[1]
-                tmpckt.pins = tokens[2:]
-                subckts.append(tmpckt)
-                subckt_flag = True
-            elif line.startswith(".ends") or line.startswith(".ENDS"):
-                subckt_flag = False
+            if line.endswith('\\'):
+                contents += line[:-1]
             else:
-                if subckt_flag:
-                    entry = SpiceEntry()
-                    entry.name = tokens[0]
-                    for i in range(len(tokens)-1, 0, -1):
-                        token = tokens[i]
-                        if '=' in token:
-                            a_eq_b = token.split('=')
-                            assert len(a_eq_b) == 2
-                            entry.attributes[a_eq_b[0]] = a_eq_b[1]
-                        else:
-                            entry.cell = tokens[i] # type: nmos, pmos, ...
-                            entry.pins = tokens[1:i]
-                            break
-                    subckts[-1].entries.append(entry)
-                else:
-                    assert 0, "not in a subckt: %s" % line
+                contents += line + "\n"
+    #print(filename)
+    #print(contents)
+    #pdb.set_trace()
+    return contents 
+
+def read_netlist(filename, ckthead, ckttail, comment):
+    subckts = []
+    subckt_flag = False
+
+    contents = remove_linewrap_symbols(filename)
+    lines = contents.split("\n")
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        #tokens = line.split()
+        tokens = line.replace('(', '').replace(')', '').split()
+        #if line.startswith("*"):
+        if startwithlist(line, comment):
+            continue
+        #elif line.startswith(".subckt") or line.startswith(".SUBCKT"):
+        elif startwithlist(line, ckthead):
+            tmpckt = SpiceSubckt()
+            tmpckt.name = tokens[1]
+            tmpckt.pins = tokens[2:]
+            subckts.append(tmpckt)
+            subckt_flag = True
+        #elif line.startswith(".ends") or line.startswith(".ENDS"):
+        elif startwithlist(line, ckttail):
+            subckt_flag = False
+        else:
+            if subckt_flag:
+                entry = SpiceEntry()
+                entry.name = tokens[0]
+                for i in range(len(tokens)-1, 0, -1):
+                    token = tokens[i]
+                    if '=' in token:
+                        a_eq_b = token.split('=')
+                        assert len(a_eq_b) == 2
+                        entry.attributes[a_eq_b[0]] = a_eq_b[1]
+                    else:
+                        entry.cell = tokens[i] # type: nmos, pmos, ...
+                        entry.pins = tokens[1:i]
+                        break
+                subckts[-1].entries.append(entry)
+            else:
+                assert 0, "not in a subckt: %s" % line
 
     return subckts
 
@@ -267,7 +297,7 @@ def subckts2graph(subckts, root_hint, moslist, caplist, reslist, bjtlist, xilist
 
     return graph, roots
 
-def parse_all(filedir, moslist, caplist, reslist, bjtlist, xilist):
+def parse_all(filedir, moslist, caplist, reslist, bjtlist, xilist, ckthead, ckttail, comment):
     dataX = []
     dataY = []
 
@@ -278,7 +308,7 @@ def parse_all(filedir, moslist, caplist, reslist, bjtlist, xilist):
         print("read netlist file: %s" % netlist)
         root_hint = netlist.split('/')[-1].split('.')[0]
 
-        subckts = read_netlist(netlist)
+        subckts = read_netlist(netlist, ckthead, ckttail, comment)
         
         # parse symfile
         symfile = netlist.replace(".sp", ".sym") if netlist.replace(".sp", ".sym") in symfiles else None 

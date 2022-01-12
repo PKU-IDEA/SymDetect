@@ -21,32 +21,35 @@ torch 1.3.1
 torchvision 0.4.2
 scikit-learn 0.21.3 
 ```
+## config
 
-## datasets
+config.json
 
-We do experiments on extracted leaf-level subcircuits from the two datasets: [MAGICAL](https://github.com/magical-eda/MAGICAL-CIRCUITS), [ALIGN](https://github.com/ALIGN-analoglayout/ALIGN-public).
+|term | options |
+|:-|:-|
+|`dataset`|Give the dataset directory, like `data/huawei`|
+|`mode`| `mode` can be combinations of {`train`, `test`, `nolabel`}, like `train+test`, `test+nolabel`, `train` means training, `test` means testing, `nolabel` means no label for test data |
+|`trainset`|all the circuit names for training, e.g. `["Bandgap_1"]`, must have `Bandgap_1.sp` in dataset directory|
+|`testset`| all the circuit names for testing, similar to `trainset`|
+|`savemodel`|save the best model to `savemodel`, better not to modify |
+|`ckthead`|mark a subckt starting in spice netlist file, e.g. start with `SUBCKT` or `.subckt`|
+|`ckttail`|mark a subckt ending, similar to `ckthead`|
+|`comment`|mark a comment in spice netlist file, e.g. `*`|
+|`nmos`|if a device has a type in `nmos` list, it will be determined as a nmos device. you can include all your nmos device type names here|
+|`pmos`|all pmos device type names, similar to `nmos`|
+|`nf`| all names for finger number |
+|`w`|all names for finger width|
+|`l`| all names for device length|
+|`cap`|all capacitor device type names, similar to `nmos`|
+|`res`|all resistor device type names, simiar to `nmos`|
+|`bjt`| all bjt device type names, like `pnp`, `npn`, similar to `nmos`|
+|`xi`| all customized type names, will be recognized as `xi` |
 
 ## running the codes
 
-- prepare the data:
-  ```
-  $ bash util/prepare_dataset.sh  
-  $ python graphsage/readgraph.py
-  ```
-
-- train and test:
-  ```
-  $ python test.py
-  ```
-
-- run baseline:
-  ```
-  $ python s3det/s3det.py 
-  ```
-
-There are also some options:
-- with cuda
-- modify hyperparameters
+`
+python test_hw.py
+`
 
 ## acknowledgements
 
