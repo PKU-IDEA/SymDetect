@@ -12,6 +12,7 @@
     "nmos" : ["nmos", "xm_n"],
     "pmos" : ["pmos", "xm_p"],
     "nf" : ["nf", "fn"],
+    "multi" : ["multi", "m"],
     "w" : ["w", "fw", "wf"],
     "l" : ["l"],
     "cap" : ["capacitor", "xc"],

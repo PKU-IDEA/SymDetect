@@ -52,9 +52,14 @@ def filter_size_type_elec_rule(G, p0, p1, pmos_types, nmos_types):
         w1, l1 = G.nodes[p0[i]]['w'], G.nodes[p0[i]]['l']
         w2, l2 = G.nodes[p1[i]]['w'], G.nodes[p1[i]]['l']
         elec1, elec2 = G.nodes[p0[i]]['elec'], G.nodes[p1[i]]['elec']
+        #m1, m2 = G.nodes[p0[i]]['multi'], G.nodes[p1[i]]['multi']
         #if type_rule2(type1, type2) and float(w1) == float(w2) and float(l1) == float(l2) and elec1 == elec2:
         if type_rule_config(type1, type2, pmos_types, nmos_types) and float(w1) == float(w2) and float(l1) == float(l2) and elec1 == elec2: 
             pred[i] = 1
+            if 'multi' in G.nodes[p0[i]].keys() and 'multi' in G.nodes[p1[i]].keys():
+                m1, m2 = G.nodes[p0[i]]['multi'], G.nodes[p1[i]]['multi']
+                if m1 != m2:
+                    pred[i] = 0
         else:
             pred[i] = 0
     return pred
@@ -154,6 +159,7 @@ class Model():
         self.wlist = config["w"]
         self.nflist = config["nf"]
         self.llist = config["l"]
+        self.multilist = config["multi"]
 
         self.caplist = config["cap"]
         self.reslist = config["res"]
@@ -181,7 +187,7 @@ class Model():
         feats, G, all_pairs  = prepare_data(dataX, dataY, 
                 self.moslist, self.pmoslist, self.nmoslist,
                 self.wlist, self.nflist, self.llist, 
-                self.caplist, self.reslist, self.bjtlist, self.xilist, self.trainset)
+                self.caplist, self.reslist, self.bjtlist, self.xilist, self.multilist, self.trainset)
         
         self.dataX = dataX
         self.dataY = dataY

@@ -38,6 +38,7 @@ config.json
 |`nmos`|if a device has a type in `nmos` list, it will be determined as a nmos device. you can include all your nmos device type names here|
 |`pmos`|all pmos device type names, similar to `nmos`|
 |`nf`| all names for finger number |
+| multi | all names for multi |
 |`w`|all names for finger width|
 |`l`| all names for device length|
 |`cap`|all capacitor device type names, similar to `nmos`|

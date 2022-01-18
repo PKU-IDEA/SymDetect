@@ -36,11 +36,55 @@ def remove_linewrap_symbols(filename):
     #pdb.set_trace()
     return contents 
 
+def substitute_split_device(contents):
+    """
+    merge split device like capacitor and resistor
+    """
+    contents_new = ""
+    lines = contents.split("\n")
+    newlines = []
+    for line in lines:
+        line = line.replace('(', ' ').replace(')', ' ')
+        
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        line = line.strip()
+        if not line:
+            i += 1
+            continue
+        lname = line.split()[0]
+        for j in range(1, len(lines)):
+            if i + j >= len(lines):
+                break
+            if not lines[i+j].strip():
+                break
+            nname = lines[i+j].split()[0]
+            if nname.startswith(lname) and ('_' in nname or '<' in nname):
+                continue
+            else:
+                break
+
+        newline = ""
+        if j > 1:
+            newline = lname + " " + line.split()[1] + " " + " ".join(lines[i+j-1].split()[2:]) + "\n"
+        else:
+            newline = line + "\n"
+        newlines.append(newline)
+        i += j
+
+    for line in newlines:
+        contents_new += line
+    contents_new += "\n"
+    return contents_new
+
 def read_netlist(filename, ckthead, ckttail, comment):
     subckts = []
     subckt_flag = False
 
     contents = remove_linewrap_symbols(filename)
+    contents = substitute_split_device(contents)
+    print(contents)
     lines = contents.split("\n")
     for line in lines:
         line = line.strip()

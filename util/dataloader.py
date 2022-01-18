@@ -38,7 +38,7 @@ def draw_graph(graph, labels, colours):
     return
 
 def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist, 
-        nflist, llist, caplist, reslist, bjtlist, xilist, trainset=[]):
+        nflist, llist, caplist, reslist, bjtlist, xilist, multilist, trainset=[]):
     G = nx.Graph() # the graph of all circuits
     num_nodes = 0 # used to merge subgraphs by changing node indices
     all_pairs = [] # store all pos and neg node pairs
@@ -114,6 +114,10 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
                 G.nodes[g.id+num_nodes]['w'] = -1
                 G.nodes[g.id+num_nodes]['l'] = -1
                 G.nodes[g.id+num_nodes]["device"] = "-1"
+            # attribute: multi
+            for multiname in multilist:
+                if multiname in g.attributes.keys():
+                    G.nodes[g.id+num_nodes]['multi'] = g.attributes[multiname]
 
         # determine pairs for training
         node_pairs = list(combinations(list(sub_G.nodes()), 2)) # all possible node pairs
