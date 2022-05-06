@@ -121,8 +121,8 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
 
         # determine pairs for training
         node_pairs = list(combinations(list(sub_G.nodes()), 2)) # all possible node pairs
-        #random.seed(1)
-        #random.shuffle(node_pairs)
+        random.seed(1)  
+        random.shuffle(node_pairs)  #避免采样到的负样本不具有代表性
         neg_pairs = []
         neg_size = 2 # the ratio of #neg_pairs/#pos_pairs
         for pair in node_pairs:
@@ -133,6 +133,22 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
             # ignore devices not mos 
             #if not type_filter_pnmos(type1, type2):
             #    continue
+            if type1!=type2:    #仅保留相同类型器件
+                continue
+            if type1=='IO':
+                continue
+            if type_filter_pnmos(type1, type2): #仅保留参数相同的MOS
+                w1, l1, w2, l2 = -1, -1, -1, -1
+                if 'w' in graph.nodes[pair[0]-num_nodes].attributes:
+                    w1 = float(graph.nodes[pair[0]-num_nodes].attributes['w']) / int(graph.nodes[pair[0]-num_nodes].attributes['nf']) 
+                    w2 = float(graph.nodes[pair[1]-num_nodes].attributes['w']) / int(graph.nodes[pair[1]-num_nodes].attributes['nf'])
+                elif 'fw' in g.attributes:
+                    w1 = convert_length(graph.nodes[pair[0]-num_nodes].attributes['fw']) / int(graph.nodes[pair[0]-num_nodes].attributes['fn'])
+                    w2 = convert_length(graph.nodes[pair[1]-num_nodes].attributes['fw']) / int(graph.nodes[pair[1]-num_nodes].attributes['fn'])
+                l1 = convert_length(graph.nodes[pair[0]-num_nodes].attributes['l'])
+                l2 = convert_length(graph.nodes[pair[1]-num_nodes].attributes['l'])            # ignore matching
+                if w1 != w2 or l1 != l2:
+                    continue
             valid_pair_num += 1
             neg_pair_num += 1
             
@@ -152,27 +168,29 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
                 continue
             valid_pair_num += 1
             type1, type2 = graph.nodes[l[0]].attributes["cell"], graph.nodes[l[1]].attributes["cell"]
-            if not type_filter_pnmos(type1, type2):
-                continue
-            # ??? wl
-            w1, l1, w2, l2 = -1, -1, -1, -1
-            if 'w' in graph.nodes[l[0]].attributes:
-                w1 = float(graph.nodes[l[0]].attributes['w']) / int(graph.nodes[l[0]].attributes['nf']) 
-                w2 = float(graph.nodes[l[1]].attributes['w']) / int(graph.nodes[l[1]].attributes['nf'])
-            elif 'fw' in g.attributes:
-                w1 = convert_length(graph.nodes[l[0]].attributes['fw']) / int(graph.nodes[l[0]].attributes['fn'])
-                w2 = convert_length(graph.nodes[l[1]].attributes['fw']) / int(graph.nodes[l[1]].attributes['fn'])
-            l1 = convert_length(graph.nodes[l[0]].attributes['l'])
-            l2 = convert_length(graph.nodes[l[1]].attributes['l'])
-            # ignore matching
-            if w1 != w2 or l1 != l2:
-                continue
+            if type_filter_pnmos(type1, type2): #原来代码正样本仅保留MOS对
+                 # continue               
+                # ??? wl
+                w1, l1, w2, l2 = -1, -1, -1, -1
+                if 'w' in graph.nodes[l[0]].attributes:
+                    w1 = float(graph.nodes[l[0]].attributes['w']) / int(graph.nodes[l[0]].attributes['nf']) 
+                    w2 = float(graph.nodes[l[1]].attributes['w']) / int(graph.nodes[l[1]].attributes['nf'])
+                elif 'fw' in g.attributes:
+                    w1 = convert_length(graph.nodes[l[0]].attributes['fw']) / int(graph.nodes[l[0]].attributes['fn'])
+                    w2 = convert_length(graph.nodes[l[1]].attributes['fw']) / int(graph.nodes[l[1]].attributes['fn'])
+                l1 = convert_length(graph.nodes[l[0]].attributes['l'])
+                l2 = convert_length(graph.nodes[l[1]].attributes['l'])
+                # ignore matching
+                if w1 != w2 or l1 != l2:
+                    continue
             if is_train:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 1])
             else:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 0])
 
         all_pairs += pos_pairs + neg_pairs
+        random.seed(1)  
+        random.shuffle(all_pairs)   #后续train有打乱，test没有，避免test正样本都出现在前面
         num_nodes += len(graph.nodes)
 
         # construct graph edges 
@@ -214,10 +232,13 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
         #draw_graph(G, node_attr, label)
 
     # convert node types into one-hot vector
-    all_type = {}
-    for x in node_types:
-        if x not in all_type:
-            all_type[x] = len(all_type)
+    # all_type = {}
+    # 固定feature每一维代表的含义，以便使模型具有泛化能力
+    all_type = {'IO': 0, 'nmos': 1, 'pmos': 2, 'res': 3, 'gate': 4, \
+        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8}
+    # for x in node_types:
+    #     if x not in all_type:
+    #         all_type[x] = len(all_type)
     print(all_type)
     num_types = len(all_type)
     feat = []
