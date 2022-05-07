@@ -169,20 +169,20 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
             valid_pair_num += 1
             type1, type2 = graph.nodes[l[0]].attributes["cell"], graph.nodes[l[1]].attributes["cell"]
             if type_filter_pnmos(type1, type2): #原来代码正样本仅保留MOS对
-                 # continue               
+                continue               
                 # ??? wl
-                w1, l1, w2, l2 = -1, -1, -1, -1
-                if 'w' in graph.nodes[l[0]].attributes:
-                    w1 = float(graph.nodes[l[0]].attributes['w']) / int(graph.nodes[l[0]].attributes['nf']) 
-                    w2 = float(graph.nodes[l[1]].attributes['w']) / int(graph.nodes[l[1]].attributes['nf'])
-                elif 'fw' in g.attributes:
-                    w1 = convert_length(graph.nodes[l[0]].attributes['fw']) / int(graph.nodes[l[0]].attributes['fn'])
-                    w2 = convert_length(graph.nodes[l[1]].attributes['fw']) / int(graph.nodes[l[1]].attributes['fn'])
-                l1 = convert_length(graph.nodes[l[0]].attributes['l'])
-                l2 = convert_length(graph.nodes[l[1]].attributes['l'])
-                # ignore matching
-                if w1 != w2 or l1 != l2:
-                    continue
+            w1, l1, w2, l2 = -1, -1, -1, -1
+            if 'w' in graph.nodes[l[0]].attributes:
+                w1 = float(graph.nodes[l[0]].attributes['w']) / int(graph.nodes[l[0]].attributes['nf']) 
+                w2 = float(graph.nodes[l[1]].attributes['w']) / int(graph.nodes[l[1]].attributes['nf'])
+            elif 'fw' in g.attributes:
+                w1 = convert_length(graph.nodes[l[0]].attributes['fw']) / int(graph.nodes[l[0]].attributes['fn'])
+                w2 = convert_length(graph.nodes[l[1]].attributes['fw']) / int(graph.nodes[l[1]].attributes['fn'])
+            l1 = convert_length(graph.nodes[l[0]].attributes['l'])
+            l2 = convert_length(graph.nodes[l[1]].attributes['l'])
+            # ignore matching
+            if w1 != w2 or l1 != l2:
+                continue
             if is_train:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 1])
             else:
@@ -235,7 +235,7 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
     # all_type = {}
     # 固定feature每一维代表的含义，以便使模型具有泛化能力
     all_type = {'IO': 0, 'nmos': 1, 'pmos': 2, 'res': 3, 'gate': 4, \
-        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8}
+        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8, 'bjt' : 9, "c" : 10, "b" : 11, "e" : 12}
     # for x in node_types:
     #     if x not in all_type:
     #         all_type[x] = len(all_type)
