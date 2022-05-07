@@ -118,7 +118,7 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
         random.seed(1)
         random.shuffle(node_pairs)
         neg_pairs = []
-        neg_size = 2 # the ratio of #neg_pairs/#pos_pairs
+        neg_size = 8 # the ratio of #neg_pairs/#pos_pairs
         for pair in node_pairs:
             # skip pos pairs 
             if [pair[0]-num_nodes, pair[1]-num_nodes] in label or [pair[1]-num_nodes, pair[0]-num_nodes] in label:

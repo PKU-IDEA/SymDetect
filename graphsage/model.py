@@ -38,7 +38,7 @@ class SupervisedGraphSage(nn.Module):
         # init.xavier_uniform_(self.weight)
     def reset_parameters(self):
         self.enc.reset_parameters()
-        init.xavier_uniform_(self.weight)
+        # init.xavier_uniform_(self.weight)
     def forward(self, features, adj_lists, pair1, pair2):
         embed=self.enc(features,adj_lists)
         embed=embed.to('cpu')
@@ -151,7 +151,7 @@ def train(feats, G, all_pairs, tflag, pmos_types, nmos_types):
 
     enc=GNN(feat_dim,hidden_dim,hidden_dim,3,0.2)
     graphsage = SupervisedGraphSage(enc)
-    # graphsage.reset_parameters()
+    graphsage.reset_parameters()
     criterion=nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(filter(lambda p : p.requires_grad, graphsage.parameters()), lr=0.001, weight_decay=1e-5)
     
@@ -183,8 +183,8 @@ def train(feats, G, all_pairs, tflag, pmos_types, nmos_types):
             pred = output.data.numpy()
             filt = filter_size_type_elec_rule(G, pair1, pair2, pmos_types, nmos_types)
             pred = np.where(pred < filt, pred, filt)
-            # pred = torch.where(output < 0.5, 0, 1)
-            pred = pair_bipartite_match(G, pred, pair1, pair2)
+            pred = torch.where(output < 0.5, 0, 1)
+            # pred = pair_bipartite_match(G, pred, pair1, pair2)
             train_acc+=f1_score(sub_label, pred)
             train_loss+=loss.item()           
 
@@ -200,8 +200,8 @@ def train(feats, G, all_pairs, tflag, pmos_types, nmos_types):
         pred = output.data.numpy()
         filt = filter_size_type_elec_rule(G, valid_pair1, valid_pair2, pmos_types, nmos_types)
         pred = np.where(pred < filt, pred, filt)
-        # pred = np.where(pred < 0.5, 0, 1)
-        pred = pair_bipartite_match(G, pred, valid_pair1, valid_pair2)
+        pred = np.where(pred < 0.5, 0, 1)
+        # pred = pair_bipartite_match(G, pred, valid_pair1, valid_pair2)
         val_acc=f1_score(np.asarray(valid_label), pred)
         val_loss_record+=[val_loss]
         val_acc_record+=[val_acc]
