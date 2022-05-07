@@ -105,6 +105,7 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     fig.tight_layout()
     plt.savefig("confusion.png")
     #return ax
+    return cm
 
 
 #np.set_printoptions(precision=2)

@@ -38,7 +38,7 @@ def draw_graph(graph, labels, colours):
     return
 
 def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist, 
-        nflist, llist, caplist, reslist, bjtlist, xilist, multilist, trainset=[]):
+        nflist, llist, caplist, reslist, bjtlist, xilist, multilist, trainset=[], testset=[]):
     G = nx.Graph() # the graph of all circuits
     num_nodes = 0 # used to merge subgraphs by changing node indices
     all_pairs = [] # store all pos and neg node pairs
@@ -47,7 +47,7 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
     node_types = [] # store types of all nodes
     node_is_pin = [] # ? judge pin
     node_potential = [] # store symbolic electricity potential of all pins
-    ratio_sample = 0.7 # #training_samples/#total_samples
+    # ratio_sample = 0.7 # #training_samples/#total_samples
     #trainset = [0, 7, 3, 1, 2]
     print("trainset", trainset)
 
@@ -67,35 +67,28 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
             # node type
             node_attr[g.id+num_nodes] = type_filter_mos(g.attributes["cell"], pmoslist, nmoslist, caplist, reslist, bjtlist, xilist)
             node_types.append(type_filter_mos(g.attributes["cell"], pmoslist, nmoslist, caplist, reslist, bjtlist, xilist))
-            node_is_pin.append(np.array([1, 0]))
+            node_is_pin.append(np.array([0]))
             
             # add node
             G.add_node(g.id+num_nodes)
             sub_G.add_node(g.id+num_nodes)
             G.nodes[g.id+num_nodes]["name"] = g.attributes["name"]
             G.nodes[g.id+num_nodes]["graph"] = i # which subgraph the node belongs to
-
+            G.nodes[g.id+num_nodes]["device"] = node_attr[g.id+num_nodes]
+            
             if g.attributes["cell"] == "IO":
                 G.nodes[g.id+num_nodes]["type"] = "IO"
-                sub_G.nodes[g.id+num_nodes]["type"] = "IO"
+                # sub_G.nodes[g.id+num_nodes]["type"] = "IO"
             else:
                 G.nodes[g.id+num_nodes]["type"] = "device"
-                sub_G.nodes[g.id+num_nodes]["type"] = "device"
+                # sub_G.nodes[g.id+num_nodes]["type"] = "device"
             #if g.attributes["cell"] in ["pmos", "pfet", "pfet_lvt", "PMOS", "nmos", "nfet", "nfet_lvt", "NMOS"] or "xm" in g.attributes["cell"]:
             if g.attributes["cell"] in moslist:
                 w, nf = -1, 1
-                #if 'w' in g.attributes:
-                #    w = convert_length(g.attributes['w'])
-                #elif 'fw' in g.attributes:
-                #    w = convert_length(g.attributes['fw'])
                 for wname in wlist:
                     if wname in g.attributes:
                         w = convert_length(g.attributes[wname])
                         break
-                #if 'nf' in g.attributes:
-                #    nf = int(g.attributes['nf'])
-                #elif 'fn' in g.attributes:
-                #    nf = int(g.attributes['fn'])
                 for nfname in nflist:
                     if nfname in g.attributes:
                         nf = int(g.attributes[nfname])
@@ -109,11 +102,12 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
                         l = convert_length(g.attributes[lname])
                         break
                 G.nodes[g.id+num_nodes]['l'] = l
-                G.nodes[g.id+num_nodes]["device"] = g.attributes["cell"]
+                # G.nodes[g.id+num_nodes]["device"] = g.attributes["cell"]
             else:
                 G.nodes[g.id+num_nodes]['w'] = -1
                 G.nodes[g.id+num_nodes]['l'] = -1
-                G.nodes[g.id+num_nodes]["device"] = "-1"
+                # G.nodes[g.id+num_nodes]["device"] = "-1"
+            
             # attribute: multi
             for multiname in multilist:
                 if multiname in g.attributes.keys():
@@ -121,18 +115,31 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
 
         # determine pairs for training
         node_pairs = list(combinations(list(sub_G.nodes()), 2)) # all possible node pairs
-        #random.seed(1)
-        #random.shuffle(node_pairs)
+        random.seed(1)
+        random.shuffle(node_pairs)
         neg_pairs = []
         neg_size = 2 # the ratio of #neg_pairs/#pos_pairs
         for pair in node_pairs:
             # skip pos pairs 
             if [pair[0]-num_nodes, pair[1]-num_nodes] in label or [pair[1]-num_nodes, pair[0]-num_nodes] in label:
                 continue
-            type1, type2 = graph.nodes[pair[0]-num_nodes].attributes["cell"], graph.nodes[pair[1]-num_nodes].attributes["cell"]
             # ignore devices not mos 
             #if not type_filter_pnmos(type1, type2):
             #    continue
+            type1, type2 = G.nodes[pair[0]]["device"], G.nodes[pair[1]]["device"]
+            if type1!=type2:
+                continue
+            if type1=='IO':
+                continue
+            if type_filter_pnmos(type1, type2):
+                w1 = G.nodes[pair[0]]['w']
+                w2 = G.nodes[pair[1]]['w']
+                l1 = G.nodes[pair[0]]['l']
+                l2 = G.nodes[pair[1]]['l']          
+                # ignore matching
+                if w1 != w2 or l1 != l2:
+                    continue
+
             valid_pair_num += 1
             neg_pair_num += 1
             
@@ -142,37 +149,40 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
                     break
                 else:
                     neg_pairs.append([pair[0], pair[1], 0, 1])
-            else:
+            elif i in testset:
                 neg_pairs.append([pair[0], pair[1], 0, 0])
+            else:
+                neg_pairs.append([pair[0], pair[1], 0, 2])
 
         pos_pairs = []
         for l in label:
             # ignore self symmetry
             if len(l) == 1:
                 continue
-            valid_pair_num += 1
-            type1, type2 = graph.nodes[l[0]].attributes["cell"], graph.nodes[l[1]].attributes["cell"]
-            if not type_filter_pnmos(type1, type2):
-                continue
-            # ??? wl
-            w1, l1, w2, l2 = -1, -1, -1, -1
-            if 'w' in graph.nodes[l[0]].attributes:
-                w1 = float(graph.nodes[l[0]].attributes['w']) / int(graph.nodes[l[0]].attributes['nf']) 
-                w2 = float(graph.nodes[l[1]].attributes['w']) / int(graph.nodes[l[1]].attributes['nf'])
-            elif 'fw' in g.attributes:
-                w1 = convert_length(graph.nodes[l[0]].attributes['fw']) / int(graph.nodes[l[0]].attributes['fn'])
-                w2 = convert_length(graph.nodes[l[1]].attributes['fw']) / int(graph.nodes[l[1]].attributes['fn'])
-            l1 = convert_length(graph.nodes[l[0]].attributes['l'])
-            l2 = convert_length(graph.nodes[l[1]].attributes['l'])
-            # ignore matching
-            if w1 != w2 or l1 != l2:
-                continue
+            type1, type2 = G.nodes[pair[0]]["device"], G.nodes[pair[1]]["device"]
+            if type_filter_pnmos(type1, type2):
+                w1 = G.nodes[pair[0]]['w']
+                w2 = G.nodes[pair[1]]['w']
+                l1 = G.nodes[pair[0]]['l']
+                l2 = G.nodes[pair[1]]['l']          
+                # ignore matching
+                if w1 != w2 or l1 != l2:
+                    continue
+
             if is_train:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 1])
-            else:
+            elif i in testset:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 0])
+            else:
+                pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 2])
 
-        all_pairs += pos_pairs + neg_pairs
+            valid_pair_num += 1
+
+        sub_pairs=pos_pairs + neg_pairs
+        random.seed(1)
+        random.shuffle(sub_pairs)
+
+        all_pairs += sub_pairs
         num_nodes += len(graph.nodes)
 
         # construct graph edges 
@@ -180,7 +190,7 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
         for p in graph.pins:
             node_attr[p.id+num_nodes] = p.attributes["type"]
             node_types.append(p.attributes["type"]) 
-            node_is_pin.append(np.array([0, 1])) # [0, 1] for pin, [1, 0] for device
+            node_is_pin.append(np.array([1])) # [1] for pin, [0] for device
 
             G.add_node(p.id+num_nodes)
             G.nodes[p.id+num_nodes]["type"] = p.attributes["type"]
@@ -214,10 +224,11 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
         #draw_graph(G, node_attr, label)
 
     # convert node types into one-hot vector
-    all_type = {}
-    for x in node_types:
-        if x not in all_type:
-            all_type[x] = len(all_type)
+    all_type = {'IO': 0, 'nmos': 1, 'pmos': 2, 'res': 3, 'gate': 4, \
+        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8}
+    # for x in node_types:
+    #     if x not in all_type:
+    #         all_type[x] = len(all_type)
     print(all_type)
     num_types = len(all_type)
     feat = []

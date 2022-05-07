@@ -341,12 +341,10 @@ def subckts2graph(subckts, root_hint, moslist, caplist, reslist, bjtlist, xilist
 
     return graph, roots
 
-def parse_all(filedir, moslist, caplist, reslist, bjtlist, xilist, ckthead, ckttail, comment):
+def parse_all(netlists, symfiles, moslist, caplist, reslist, bjtlist, xilist, ckthead, ckttail, comment):
     dataX = []
     dataY = []
 
-    netlists = glob.glob(os.path.join(filedir, "*.sp"))
-    symfiles = glob.glob(os.path.join(filedir, "*.sym"))
     for netlist in netlists:
         # parse netlist
         print("read netlist file: %s" % netlist)

@@ -1,14 +1,14 @@
 import os
 import sys
 
-import json
+import json5
 import time
 
 import numpy as np
 import networkx as nx
 import torch
 
-from sklearn.metrics import f1_score, recall_score, precision_score
+from sklearn.metrics import f1_score, recall_score, precision_score, accuracy_score
 
 from util.message import info
 from util.parser import *
@@ -64,16 +64,18 @@ def filter_size_type_elec_rule(G, p0, p1, pmos_types, nmos_types):
             pred[i] = 0
     return pred
 
-def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile, lflag, pmos_types, nmos_types):
+def test_sage(features, adj_lists, G, model, testset, test_pair1, test_pair2, test_label, resultfile, lflag, pmos_types, nmos_types):
     #G = nx.read_gpickle('data/graph.pkl')
     
     if len(testset) < 100000:
-        test_output = torch.sigmoid(model.forward(test_pair1, test_pair2))
+        test_output = model(features, adj_lists, test_pair1, test_pair2)
         #pred = np.where(test_output.data.numpy() < 0.5, 0, 1)
         pred = test_output.data.numpy()
         filt = filter_size_type_elec_rule(G, test_pair1, test_pair2, pmos_types, nmos_types)
         pred = np.where(pred < filt, pred, filt)
+        # pred = np.where(pred < 0.5, 0, 1)
         pred = pair_bipartite_match(G, pred, test_pair1, test_pair2)
+        # pred=pred.astype(int)
         '''for j in range(pred.size):
             if pred[j] == 1 and test_label[j] == 0:
                 #print(G.nodes[test_pair1[j]]['name'], G.nodes[test_pair2[j]]['name'])
@@ -83,13 +85,13 @@ def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile,
         with open(resultfile, "w") as f:
             for j in range(pred.size):
                 if pred[j] == 1:
-                    f.write(G.nodes[test_pair1[j]]['name']+' '+G.nodes[test_pair2[j]]['name']+'\n')
+                    f.write(G.nodes[test_pair1[j]]['name']+' '+G.nodes[test_pair2[j]]['name']+' '+str(test_label[j])+'\n')
 
     else:
         chunk_size = 5120
         pred = []
         for j in range(len(testset)//chunk_size):
-            if j < (len(test)//chunk_size-1):
+            if j < (len(testset)//chunk_size-1):
                 pair1 = test_pair1[j*chunk_size:(j+1)*chunk_size]
                 pair2 = test_pair2[j*chunk_size:(j+1)*chunk_size]
             else:
@@ -105,9 +107,22 @@ def test_sage(G, model, testset, test_pair1, test_pair2, test_label, resultfile,
     if lflag:
         return
 
-    print("True Positive Rate:", recall_score(np.asarray(test_label), pred, average="micro", labels=[1]))
-    print("False Positive Rate:", 1-recall_score(np.asarray(test_label), pred, average="micro", labels=[0]))
-    plot_confusion_matrix(np.asarray(test_label), pred, np.array([0, 1]), title='Confusion Matrix, without normalization')
+    acc=accuracy_score(np.asarray(test_label), pred)
+    pre=precision_score(np.asarray(test_label), pred)
+    rec=recall_score(np.asarray(test_label), pred)
+    f1s=f1_score(np.asarray(test_label), pred)
+    print("Accuracy: ", acc)
+    print("Precision:", pre)
+    print("Recall:   ", rec)
+    print("F1-score: ", f1s)
+    cm=plot_confusion_matrix(np.asarray(test_label), pred, np.array([0, 1]), title='Confusion Matrix, without normalization')
+    with open("log", "a") as f:       
+        f.write("Confusion matrix\n")
+        f.write(str(cm)+"\n")
+        f.write("Precision: "+str(pre)+"\n")
+        f.write("Recall:    "+str(rec)+"\n")
+        f.write("F1score:   "+str(f1s)+"\n\n")
+
 
 def pair_bipartite_match(G, prob, test_pair1, test_pair2):
     pair_gid = []
@@ -143,7 +158,8 @@ class Model():
 
         self.trainlist = config["trainset"]
         self.testlist = config["testset"]
-        
+        self.validlist = config["validset"]
+
         self.istrain = "train" in config["mode"]
         self.istest = "test" in config["mode"]
         self.labelflag = "nolabel" in config["mode"]
@@ -170,24 +186,46 @@ class Model():
     def preprocess(self):
         info('i', "Start Parsing Dataset...")
 
-        dataX, dataY, netlists = parse_all(self.datadir, self.moslist, 
+        netlists = glob.glob(os.path.join(self.datadir, "*.sp"))
+        symfiles = glob.glob(os.path.join(self.datadir, "*.sym"))
+        dataset=self.trainlist+self.testlist+self.validlist
+        # if self.istrain and self.istest:
+        #     dataset=self.trainlist+self.testlist
+        # elif self.istrain:
+        #     dataset=self.trainlist
+        # elif self.istest:
+        #     dataset=self.testlist
+        with open("log", "a") as f:
+            f.write("trainset: "+str(len(self.trainlist))+"\n")
+            f.write(str(self.trainlist)+"\n")
+            f.write("validset: "+str(len(self.validlist))+"\n")
+            f.write(str(self.validlist)+"\n")
+            f.write("testset: "+str(len(self.testlist))+"\n")
+            f.write(str(self.testlist)+"\n")
+
+        netlists = [netlist for netlist in netlists if os.path.basename(netlist).split('.')[0] in dataset]
+
+        dataX, dataY, netlists = parse_all(netlists, symfiles, self.moslist, 
                 self.caplist, self.reslist, self.bjtlist, self.xilist, 
                 self.ckthead, self.ckttail, self.cktcomment) 
         
-        netlists = [os.path.basename(netlist) for netlist in netlists]
+        # netlists = [os.path.basename(netlist) for netlist in netlists]
         self.trainset = []
+        self.validset = []
         self.testset = []
         for i in range(len(dataX)):
             data = dataX[i]
             if data["subckts"][0].name in self.trainlist:
                 self.trainset.append(i)
+            elif data["subckts"][0].name in self.validlist:
+                self.validset.append(i)
             elif data["subckts"][0].name in self.testlist:
                 self.testset.append(i)
 
         feats, G, all_pairs  = prepare_data(dataX, dataY, 
                 self.moslist, self.pmoslist, self.nmoslist,
                 self.wlist, self.nflist, self.llist, 
-                self.caplist, self.reslist, self.bjtlist, self.xilist, self.multilist, self.trainset)
+                self.caplist, self.reslist, self.bjtlist, self.xilist, self.multilist, self.trainset, self.testset)
         
         self.dataX = dataX
         self.dataY = dataY
@@ -207,13 +245,14 @@ class Model():
         else:
             info('e', "Mode NOT Supported")
 
+        # if self.istrain:
         self.train()
         if self.istest:
             self.test()
 
     def train(self):
         start_time = time.time()
-        graphsage, testset, test_pair1, test_pair2, test_label = sage.train(self.feats, self.G, self.all_pairs, self.tflag)
+        graphsage, testset, test_pair1, test_pair2, test_label, features, adj_lists = sage.train(self.feats, self.G, self.all_pairs, self.tflag, self.pmoslist, self.nmoslist)
         end_time = time.time()
         info('i', "Training time %f s" % (end_time - start_time))
         self.graphsage = graphsage
@@ -221,11 +260,14 @@ class Model():
         self.test_pair1 = test_pair1
         self.test_pair2 = test_pair2
         self.test_label = test_label
+        self.features=features
+        self.adj_lists=adj_lists
         pass
 
     def test(self):
         start_time = time.time()
-        test_sage(self.G, self.graphsage, self.testset, self.test_pair1, self.test_pair2, 
+        # self.graphsage.load_state_dict(torch.load('best_model.pkl'))
+        test_sage(self.features, self.adj_lists, self.G, self.graphsage, self.testset, self.test_pair1, self.test_pair2, 
                 self.test_label, self.resultfile, self.labelflag, self.pmoslist, self.nmoslist)
         end_time = time.time()
         info('i', "Inference time %f s" % (end_time - start_time))
@@ -235,7 +277,7 @@ class Model():
 if __name__=="__main__":
     config = None
     with open("config.json", "r") as f:
-        config = json.load(f)
+        config = json5.load(f)
     info('i', "Load Config from %s" % "config.json")
     info('i', "Use Verbose %d Mode" % config["verbose"])
     info('i', "Use Dataset %s" % config["dataset"])

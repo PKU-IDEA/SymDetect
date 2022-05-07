@@ -1,0 +1,21 @@
+V2I_VCO_v4
+xm4 xm10
+xm5 xm8
+m7 m11
+m6 m9
+xi1<0>/m0 xi1<3>/m0
+xi1<0>/m1 xi1<3>/m1
+xi1<0>/m2 xi1<3>/m2
+xi1<0>/m3 xi1<3>/m3
+xi1<0>/m4 xi1<3>/m4
+xi1<0>/m5 xi1<3>/m5
+xi1<0>/m6 xi1<3>/m6
+xi1<0>/m7 xi1<3>/m7
+xi1<1>/m0 xi1<2>/m0
+xi1<1>/m1 xi1<2>/m1
+xi1<1>/m2 xi1<2>/m2
+xi1<1>/m3 xi1<2>/m3
+xi1<1>/m4 xi1<2>/m4
+xi1<1>/m5 xi1<2>/m5
+xi1<1>/m6 xi1<2>/m6
+xi1<1>/m7 xi1<2>/m7

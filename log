@@ -1,0 +1,219 @@
+//权重矩阵
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[499/500] Train Acc: 0.900000 Loss: 0.041976 | Val Acc: 0.536585 loss: 9.085788Confusion matrix
+[[75 15]
+ [10 10]]
+Precision: 0.4
+Recall:    0.5
+F1score:   0.4444444444444445
+
+//cosine衡量embedding的相似度
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[482/500] Train Acc: 0.854369 Loss: 0.433802 | Val Acc: 0.857143 loss: 0.966352Confusion matrix
+[[82  8]
+ [ 3 17]]
+Precision: 0.68
+Recall:    0.85
+F1score:   0.7555555555555556
+
+//打乱单个网表内正负样本顺序
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[497/500] Train Acc: 0.862745 Loss: 0.450343 | Val Acc: 0.878049 loss: 0.928872Confusion matrix
+[[81  9]
+ [ 6 14]]
+Precision: 0.6086956521739131
+Recall:    0.7
+F1score:   0.6511627906976744
+
+//训练集和验证集中移除pair_bipartite_match，测试集保留
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[322/500] Train Acc: 0.894309 Loss: 0.433313 | Val Acc: 0.423529 loss: 1.133485Confusion matrix
+[[83  7]
+ [ 1 19]]
+Precision: 0.7307692307692307
+Recall:    0.95
+F1score:   0.8260869565217392
+
+//增加layout提取的网表
+trainset: 12
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP', 'Comparator_1', 'Comparator_2', 'Comparator_3', 'Dco_1', 'Dco_2']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[480/500] Train Acc: 0.805556 Loss: 0.524730 | Val Acc: 0.500000 loss: 0.833734Confusion matrix
+[[81  9]
+ [ 3 17]]
+Precision: 0.6538461538461539
+Recall:    0.85
+F1score:   0.7391304347826088
+
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[192/500] Train Acc: 0.846715 Loss: 0.483718 | Val Acc: 0.500000 loss: 0.822181Confusion matrix
+[[82  8]
+ [ 3 17]]
+Precision: 0.68
+Recall:    0.85
+F1score:   0.7555555555555556
+
+//学习率由0.01改为0.001
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[498/500] Train Acc: 0.852941 Loss: 0.485169 | Val Acc: 0.480000 loss: 0.761610Confusion matrix
+[[81  9]
+ [ 3 17]]
+Precision: 0.6538461538461539
+Recall:    0.85
+F1score:   0.7391304347826088
+
+//测试集移除pair_bipartite_match
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[499/500] Train Acc: 0.794521 Loss: 0.537945 | Val Acc: 0.537313 loss: 0.819982Confusion matrix
+[[59 31]
+ [ 0 20]]
+Precision: 0.39215686274509803
+Recall:    1.0
+F1score:   0.5633802816901409
+
+//模型中删除bns 不采用
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[499/500] Train Acc: 0.746835 Loss: 0.626671 | Val Acc: 0.423529 loss: 0.865175Confusion matrix
+[[55 35]
+ [ 0 20]]
+Precision: 0.36363636363636365
+Recall:    1.0
+F1score:   0.5333333333333333
+
+//hidden_dim由8改为16 不采用
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[497/500] Train Acc: 0.867647 Loss: 0.481701 | Val Acc: 0.493151 loss: 0.795041Confusion matrix
+[[62 28]
+ [ 3 17]]
+Precision: 0.37777777777777777
+Recall:    0.85
+F1score:   0.523076923076923
+
+//neg_size由2改为8
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[499/500] Train Acc: 0.710526 Loss: 0.600500 | Val Acc: 0.571429 loss: 0.706620Confusion matrix
+[[66 24]
+ [ 3 17]]
+Precision: 0.4146341463414634
+Recall:    0.85
+F1score:   0.5573770491803278
+
+//epoch由500改为2000 不采用
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[1996/2000] Train Acc: 0.848485 Loss: 0.497116 | Val Acc: 0.493151 loss: 0.951530Confusion matrix
+[[59 31]
+ [ 1 19]]
+Precision: 0.38
+Recall:    0.95
+F1score:   0.5428571428571428
+
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[495/500] Train Acc: 0.736842 Loss: 0.571468 | Val Acc: 0.600000 loss: 0.730306Confusion matrix
+[[62 28]
+ [ 1 19]]
+Precision: 0.40425531914893614
+Recall:    0.95
+F1score:   0.5671641791044776
+
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[499/500] Train Acc: 0.792793 Loss: 0.586852 | Val Acc: 0.837209 loss: 0.881506Confusion matrix
+[[67 23]
+ [ 2 18]]
+Precision: 0.43902439024390244
+Recall:    0.9
+F1score:   0.5901639344262295
+
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[481/500] Train Acc: 0.766355 Loss: 0.547323 | Val Acc: 0.878049 loss: 0.765687Confusion matrix
+[[81  9]
+ [ 6 14]]
+Precision: 0.6086956521739131
+Recall:    0.7
+F1score:   0.6511627906976744
+
+trainset: 7
+['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
+validset: 2
+['CLK_COMP', 'DAC']
+testset: 2
+['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
+[486/500] Train Acc: 0.803738 Loss: 0.491972 | Val Acc: 0.837209 loss: 0.979690Confusion matrix
+[[80 10]
+ [ 4 16]]
+Precision: 0.6153846153846154
+Recall:    0.8
+F1score:   0.6956521739130435
+

@@ -1,22 +1,35 @@
 {
-    "dataset" : "data/huawei",
+    "dataset" : "data",
     "verbose" : true,
-    "mode" : "train+test+nolabel",
+    "mode" : "train+test",
+    // "mode" : "test",
     "result" : "result.txt",
-    "trainset" : ["Bandgap_1", "Bandgap_2", "Comparator_1", "Comparator_2", "Dco_1"],
-    "testset" : ["Bandgap_3", "Bandgap_4", "Comparator_3", "Dco_2", "fake"],
+    "trainset" : [
+        "2019_10_01_5t_OTA", "Cascode_current_mirrot_OTA", "OTA_FF_2s_v3e", "Current_mirror_OTA",
+         "myComparator_v3", "Comparator_not_clocked", "COMPARATOR_PRE_AMP", 
+        //   "Comparator_1to7_0p7_lvt" , "NRZ_TRI_DAC_v3_dnw", //同一个器件出现在多个对称对
+        //   "Comparator_1", "Comparator_2", "Comparator_3", "Dco_1", "Dco_2"
+     ],
+    "validset" :[
+        "CLK_COMP", 
+        "DAC" 
+    ],
+    "testset" : [
+        "Telescopic_OTA_stacked_single_ended" ,
+        "Retiming_Latch_common" 
+    ],
     "savemodel" : "best_model.pkl",
     "ckthead" : [".subckt", ".SUBCKT", "subckt", "SUBCKT"],
     "ckttail" : [".ends", ".ENDS", "ends", "ENDS"],
     "comment" : ["*"],
-    "nmos" : ["nmos", "xm_n"],
-    "pmos" : ["pmos", "xm_p"],
+    "nmos" : ["nmos", "xm_n", "pfet", "nfet_lvt", "nfet_lvt_lvt"],
+    "pmos" : ["pmos", "xm_p", "nfet", "pfet_lvt"],
     "nf" : ["nf", "fn"],
     "multi" : ["multi", "m"],
     "w" : ["w", "fw", "wf"],
     "l" : ["l"],
-    "cap" : ["capacitor", "xc"],
-    "res" : ["resistor", "xr"],
+    "cap" : ["capacitor", "xc", "cap"],
+    "res" : ["resistor", "xr", "res"],
     "bjt" : ["pnp", "npn"],
     "xi" : ["xi", "xi0"]
 }
