@@ -160,14 +160,15 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
             if len(l) == 1:
                 continue
             type1, type2 = G.nodes[pair[0]]["device"], G.nodes[pair[1]]["device"]
-            if type_filter_pnmos(type1, type2):
-                w1 = G.nodes[pair[0]]['w']
-                w2 = G.nodes[pair[1]]['w']
-                l1 = G.nodes[pair[0]]['l']
-                l2 = G.nodes[pair[1]]['l']          
-                # ignore matching
-                if w1 != w2 or l1 != l2:
-                    continue
+            if not type_filter_pnmos(type1, type2):
+                continue
+            w1 = G.nodes[pair[0]]['w']
+            w2 = G.nodes[pair[1]]['w']
+            l1 = G.nodes[pair[0]]['l']
+            l2 = G.nodes[pair[1]]['l']          
+            # ignore matching
+            if w1 != w2 or l1 != l2:
+                continue
 
             if is_train:
                 pos_pairs.append([l[0]+num_nodes, l[1]+num_nodes, 1, 1])
@@ -225,7 +226,7 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
 
     # convert node types into one-hot vector
     all_type = {'IO': 0, 'nmos': 1, 'pmos': 2, 'res': 3, 'gate': 4, \
-        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8}
+        'source/drain': 5, 'substrate': 6, 'passive': 7, 'cap': 8, 'bjt' : 9, "c" : 10, "b" : 11, "e" : 12}
     # for x in node_types:
     #     if x not in all_type:
     #         all_type[x] = len(all_type)
