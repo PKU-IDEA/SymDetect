@@ -165,18 +165,6 @@ Precision: 0.38
 Recall:    0.95
 F1score:   0.5428571428571428
 
-trainset: 7
-['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
-validset: 2
-['CLK_COMP', 'DAC']
-testset: 2
-['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
-[495/500] Train Acc: 0.736842 Loss: 0.571468 | Val Acc: 0.600000 loss: 0.730306Confusion matrix
-[[62 28]
- [ 1 19]]
-Precision: 0.40425531914893614
-Recall:    0.95
-F1score:   0.5671641791044776
 
 trainset: 7
 ['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
@@ -184,36 +172,10 @@ validset: 2
 ['CLK_COMP', 'DAC']
 testset: 2
 ['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
-[499/500] Train Acc: 0.792793 Loss: 0.586852 | Val Acc: 0.837209 loss: 0.881506Confusion matrix
-[[67 23]
- [ 2 18]]
-Precision: 0.43902439024390244
-Recall:    0.9
-F1score:   0.5901639344262295
-
-trainset: 7
-['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
-validset: 2
-['CLK_COMP', 'DAC']
-testset: 2
-['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
-[481/500] Train Acc: 0.766355 Loss: 0.547323 | Val Acc: 0.878049 loss: 0.765687Confusion matrix
+[495/500] Train Acc: 0.895833 Loss: 0.543980 | Val Acc: 0.878049 loss: 0.860201Confusion matrix
 [[81  9]
- [ 6 14]]
-Precision: 0.6086956521739131
-Recall:    0.7
-F1score:   0.6511627906976744
-
-trainset: 7
-['2019_10_01_5t_OTA', 'Cascode_current_mirrot_OTA', 'OTA_FF_2s_v3e', 'Current_mirror_OTA', 'myComparator_v3', 'Comparator_not_clocked', 'COMPARATOR_PRE_AMP']
-validset: 2
-['CLK_COMP', 'DAC']
-testset: 2
-['Telescopic_OTA_stacked_single_ended', 'Retiming_Latch_common']
-[486/500] Train Acc: 0.803738 Loss: 0.491972 | Val Acc: 0.837209 loss: 0.979690Confusion matrix
-[[80 10]
- [ 4 16]]
-Precision: 0.6153846153846154
-Recall:    0.8
-F1score:   0.6956521739130435
+ [ 3 17]]
+Precision: 0.6538461538461539
+Recall:    0.85
+F1score:   0.7391304347826088
 

@@ -159,13 +159,14 @@ def prepare_data(dataX, dataY, moslist, pmoslist, nmoslist, wlist,
             # ignore self symmetry
             if len(l) == 1:
                 continue
-            type1, type2 = G.nodes[pair[0]]["device"], G.nodes[pair[1]]["device"]
+            type1, type2 = G.nodes[l[0]+num_nodes]["device"], G.nodes[l[1]+num_nodes]["device"]
             if not type_filter_pnmos(type1, type2):
                 continue
-            w1 = G.nodes[pair[0]]['w']
-            w2 = G.nodes[pair[1]]['w']
-            l1 = G.nodes[pair[0]]['l']
-            l2 = G.nodes[pair[1]]['l']          
+
+            w1 = G.nodes[l[0]+num_nodes]['w']
+            w2 = G.nodes[l[1]+num_nodes]['w']
+            l1 = G.nodes[l[0]+num_nodes]['l']
+            l2 = G.nodes[l[1]+num_nodes]['l']          
             # ignore matching
             if w1 != w2 or l1 != l2:
                 continue
