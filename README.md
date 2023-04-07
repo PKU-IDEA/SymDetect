@@ -1,6 +1,6 @@
 # SymDetect
 
-the implementation of **Layout Symmetry Annotation for Analog Circuits with GraphNeural Networks**
+This repository contains the implementation of **Layout Symmetry Annotation for Analog Circuits with GraphNeural Networks**, ASPDAC 2021. 
 
 ## Overview
 
